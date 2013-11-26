@@ -1,0 +1,196 @@
+local sBrowserId, adresseURL
+global tRecherche, pUrl
+
+on openCard
+   BrowserOn
+   put the system date into field "Date" 
+   put "Les" && tRecherche && "du Nord de La Réunion" into fld "Recherche" of cd "Carte Map1"
+   actuHeure
+end openCard
+
+on actuHeure
+   put the long time into tTime
+   convert tTime to dateItems
+   put item 4 of tTime & ":" & item 5 of tTime & ":" & item 6 of tTime into tMyFormattedTime
+   put tMyFormattedTime into field "Heure"
+   /*
+   put mobileControlGet(sBrowserId, "url") into urlActu
+   answer urlActu
+   */
+   /*if urlActu contains  then
+      
+   else
+      
+   end if
+   */
+   send actuHeure to me in 10 milliseconds
+end actuHeure
+
+on browserOn
+   if the environment is not "mobile" then
+      exit browserOn
+   end if
+   
+   
+   -- Create our browser control and store the id
+   mobileControlCreate "browser", "BrowserBT"
+   put the result into sBrowserId
+   
+   -- Native controls start off invisible
+   mobileControlSet sBrowserId, "visible", "true"
+   
+   -- Set up a suitable initial url
+   --answer adresseURL
+   --mobileControlSet sBrowserId, "url", "https://mapsengine.google.com/map/edit?mid=zpd2DjMpXtf0.kFR3Q3cQmMdI&hl=en&ui=maps"
+   -- Make sure everything is the right size
+   resizeStack
+
+   //Si l'utilisateur a choisi "Cinémas"
+   if tRecherche is "Cinémas" then
+      //Affichage de la carte "Cinémas du Nord" du compte Google oti.du.nord@gmail.com
+      put "https://mapsengine.google.com/map/edit?mid=z_udb4YraY8U.kLF1BhXvg4zA" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   else if tRecherche is "Musées" then
+      put "https://mapsengine.google.com/map/edit?mid=z_udb4YraY8U.kIjIbXQQaRZY" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   else if tRecherche is "Théâtres" then
+      put "https://mapsengine.google.com/map/edit?mid=z_udb4YraY8U.kzIhp0dpiuuk" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   else if tRecherche is "Randonnées pédestres" then
+       put "https://mapsengine.google.com/map/edit?mid=z_udb4YraY8U.kEHSc2DkodSc" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   else if tRecherche is "Randonnées équestres" then
+       put "https://mapsengine.google.com/map/edit?mid=z_udb4YraY8U.kbnDeFUcipRU" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   else if tRecherche is "Restaurants asiatiques" then
+       put "https://mapsengine.google.com/map/edit?mid=zpd2DjMpXtf0.kFR3Q3cQmMdI&hl=en&ui=maps" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   else if tRecherche is "Restaurants indiens" then
+       put "https://mapsengine.google.com/map/edit?mid=zpd2DjMpXtf0.k8Kk-cL9NB5I" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   else if tRecherche is "Restaurants créoles" then
+       put "https://mapsengine.google.com/map/edit?mid=z_udb4YraY8U.kU44nmuvCsKk" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   else if tRecherche is "Restaurants métropolitains" then
+       put "https://mapsengine.google.com/map/edit?mid=z_udb4YraY8U.kEFga4OAKR7I" into pUrl
+      mobileControlSet sBrowserId, "url", pUrl
+   end if
+   urlVerif
+   /*
+   mobileControlGet("browser", "url")
+   put the result into urlActu
+   --put mobileControlGet(sBrowserId, "URL") into urlActu
+   answer urlActu
+   */
+end browserOn
+
+on urlVerif 
+   put mobileControlGet(sBrowserId, "url") into urlActu
+  answer url(urlActu)
+   
+   //if urlActu contains "https://mapsengine.google.com" then
+      send urlVerif to me in 10000 milliseconds
+   //else
+   //end if
+   
+    /*if urlActu contains  then
+      
+   else
+      
+   end if
+   */
+end urlVerif
+
+
+on closeCard
+   if the environment is not "mobile" then
+      exit closeCard
+   end if
+   
+   -- Destroy the control, if we fail to do this native UIViews
+   -- will just accumulate
+   mobileControlDelete sBrowserId
+end closeCard
+
+on resizeStack
+   if the environment is not "mobile" then
+      exit resizeStack
+   end if
+   
+   -- Adjust the size of the URL entry field
+   set the rect of field "URL" of cd "Carte Accueil" to the left of field "URL" of cd "Carte Accueil", the top of field "URL" of cd "Carte Accueil", the width of this card - 4, the bottom of field "URL" of cd "Carte Accueil"
+   
+   -- Adjust the size of the browser view
+   --set the rect of group "Browser" to 0, 50, the width of this stack, the height of this stack - 50
+   set the rect of group "Browser" to the effective working screenrect
+   -- Adjust the status field
+   set the rect of field "Status" to 4, the bottom of group "Browser" + 4, the width of this card - 4, the height of this card - 4
+   
+   -- Now adjust the control itself  
+   --answer the rect of group "Browser" of me
+   mobileControlSet sBrowserId,"rect","40,100,1250,700"
+   --mobileControlSet sBrowserId, "rect", the effective working screenrect
+end resizeStack
+
+--------
+
+-- This message is received after a request has been allowed and
+-- loading is starting
+on browserStartedLoading pUrl
+   put "Started loading:" && pUrl into field "Status"
+end browserStartedLoading
+
+-- This message is received when a page has been completely
+-- loaded and is displayed to the user
+on browserFinishedLoading pUrl
+   put "Finished loading:" && pUrl into field "Status"
+   put pUrl into field "Url"
+end browserFinishedLoading
+
+-- This message is received when a new url is requested. Passing it
+-- causes the load to go ahead, otherwise it does not.
+on browserLoadRequest pUrl, pReason
+   answer "Do you want to load:" && pUrl with "Yes" and "No"
+   if it is "Yes" then
+      pass browserLoadRequest
+   else
+      put "Refused:" && pUrl into field "Status"
+   end if
+end browserLoadRequest
+
+--------
+
+-- This handler is invoked by our Back/Forward/Stop/Refresh buttons
+-- we just pass the request onto the control.
+command doAction pAction
+   if the environment is not "mobile" then
+      exit doAction
+   end if
+   
+   mobileControlDo sBrowserId, pAction
+end doAction
+
+-- This handler is invoked when the url field is closed after editing.
+-- It causes a new url to be requested
+command goUrl pUrl
+   if the environment is not "mobile" then
+      exit goUrl
+   end if
+   
+   mobileControlSet sBrowserId, "url", pUrl
+   resizeStack
+   
+   
+end goUrl
+
+
+
+end preOpenCard
+/*
+on openCard
+   BrowserOn
+   put the system date into field "Date" 
+   put "Les" && tRecherche && "du Nord de La Réunion" into fld "Recherche" of cd "Carte Map1"
+end openCard
+*/
+
